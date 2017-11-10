@@ -134,7 +134,7 @@ setup(
     ],
     package_data={
         '': ['LICENSE', 'README.rst'],
-        'pylint_prosper': ['.prosperlintrc']
+        'pylint_prosper': ['.prosperlintrc', 'version.txt']
     },
     install_requires=[
         'ProsperCommon',
@@ -154,7 +154,7 @@ setup(
         ]
     },
     cmdclass={
-        'test':PyTest,
+        'test': PyTest,
         'fast': QuickTest
     }
 )

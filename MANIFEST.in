@@ -1,1 +1,2 @@
 include pylint_prosper/.prosperlintrc
+include pylint_prosper/version.txt
