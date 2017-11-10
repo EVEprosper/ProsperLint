@@ -1,0 +1,21 @@
+language: python
+python:
+  - "3.5"
+  - "3.6"
+  - "3.6-dev" # 3.6 development branch
+  - "3.7-dev" # 3.7 development branch
+install: 
+  - "pip install ."
+script: 
+  - "python setup.py test"
+deploy:
+  provider: pypi
+  user: lockefox
+  password:
+    secure: TODO
+  on:
+    tags: true
+    distributions: "sdist bdist_wheel"
+after_success:
+  - "pip install python-coveralls"
+  - "coveralls"

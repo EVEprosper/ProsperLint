@@ -1,0 +1,5 @@
+[report]
+    omit = pylint_prosper/_version.py
+
+[paths]
+    source = pylint_prosper/
