@@ -138,8 +138,8 @@ setup(
     },
     install_requires=[
         'ProsperCommon',
+        'pylint_quotes',
         'pylint',
-        'pylint_quotes'
     ],
     tests_require=[
         'pytest',
