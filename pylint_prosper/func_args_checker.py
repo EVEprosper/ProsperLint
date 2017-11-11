@@ -22,6 +22,15 @@ OPTIONS = (
         help='Enforce newline function args.  A la Kevlin Henny\'s clean code notes'
     )
 )
+def booty(butts):
+    """docstring
+
+    Args:
+        butts (str): a butt
+
+    """
+    print(butts)
+
 class FunctionArgsIndentChecker(pylint.checkers.BaseTokenChecker):
     """PyLint checker for enforcing Kevlin Henny's function arg preference
 
