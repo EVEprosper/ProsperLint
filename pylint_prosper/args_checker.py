@@ -76,21 +76,21 @@ class ArgsIndentChecker(pylint.checkers.BaseTokenChecker):
     )
 
 
-    def process_tokens(self, tokens):
-        """todo"""
-        print(tokens)
-
-    def _TODO_process(self, node, node_type):
-        """Check for docstring quote consistency.
-
-        Args:
-            node: the AST node being visited.
-            node_type: the type of node being operated on.
-
-        """
+    def process_tokens(self, tokens):  # pragma: no cover
+        """Not used?  Passing"""
         pass
 
-    def visit_functiondef(self, node):
+    def visit_classdef(self, node):
+        """checks for ``def function_name(arg1\n`` pattern in methods
+
+        Args:
+            node (:obj:`astroid.node`): function node to grade
+
+        """
+        for function_node in node.locals.values():
+            self.visit_functiondef(function_node[0], oneline_limit_adjust=1)
+
+    def visit_functiondef(self, node, oneline_limit_adjust=0):
         """checks for ``def function_name(arg1\n`` pattern
 
         Args:
@@ -103,15 +103,16 @@ class ArgsIndentChecker(pylint.checkers.BaseTokenChecker):
             args_lineno.append(arg.lineno)
 
         ## Check if valid one-line function ##
+        oneline_limit = self.config.single_line_args_limit + oneline_limit_adjust
         one_line_args = len(set(args_lineno)) <= 1
-        if one_line_args and len(args_lineno) > self.config.single_line_args_limit:
+        if one_line_args and len(args_lineno) > oneline_limit:
             self.add_message(
                 'invalid-oneline-function-format',
                 line=func_lineno,
                 args=(self.config.single_line_args_limit)
             )
             return
-        elif one_line_args and len(args_lineno) <= self.config.single_line_args_limit:
+        elif one_line_args and len(args_lineno) <= oneline_limit:
             return  # valid one-line function
 
         ## Check if first arg is on same line as function def ##

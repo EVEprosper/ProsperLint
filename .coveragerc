@@ -1,5 +1,7 @@
 [report]
-    omit = pylint_prosper/_version.py
+    omit = 
+    	pylint_prosper/_version.py
+    	pylint_prosper/__init__.py
 
 [paths]
     source = pylint_prosper/

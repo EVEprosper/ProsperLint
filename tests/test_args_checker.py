@@ -16,7 +16,6 @@ def my_good_function(  #@
         arg2,
         optional_arg=None
 ):
-    """docstring"""
     return arg1 + arg2 + optional_arg
 '''
         block = astroid.extract_node(good_function)
@@ -30,7 +29,6 @@ def my_bad_function(arg1,  #@
                     arg2,
                     optional_arg=None
 ):
-    """docstring"""
     return arg1 + arg2 + optional_arg
 '''
 
@@ -51,7 +49,6 @@ def my_bad_function(arg1,  #@
                     arg2,
                     optional_arg=None
 ):
-    """docstring"""
     return arg1 + arg2 + optional_arg
 '''
 
@@ -60,23 +57,20 @@ def my_bad_function(arg1,  #@
         with self.assertNoMessages():
             self.checker.visit_functiondef(block)
 
-    @testutils.set_config(single_line_args_limit=2)
-    def test_single_line_args(self):
+    def test_oneline_args(self):
+        """don't make noise if one-line args are within limit (2)"""
         good_oneline_func = '''
 def my_oneliner(arg1, arg2):  #@
-    """docstring"""
     pass
 '''
         block = astroid.extract_node(good_oneline_func)
         with self.assertNoMessages():
             self.checker.visit_functiondef(block)
 
-    @testutils.set_config(single_line_args_limit=2)
-    def test_too_many_single_line_args(self):
+    def test_too_many_oneline_args(self):
         """make sure bad one-line format is caught"""
         bad_oneline_func = '''
 def my_oneliner(arg1, arg2, arg3):  #@
-    """docstring"""
     pass
 '''
         block = astroid.extract_node(bad_oneline_func)
@@ -88,3 +82,171 @@ def my_oneliner(arg1, arg2, arg3):  #@
             )
         ):
             self.checker.visit_functiondef(block)
+
+    @testutils.set_config(single_line_args_limit=3)
+    def test_oneline_args_custom(self):
+        """make sure bad one-line format is caught"""
+        bad_oneline_func = '''
+def my_oneliner(arg1, arg2, arg3):  #@
+    pass
+'''
+        block = astroid.extract_node(bad_oneline_func)
+        with self.assertNoMessages():
+            self.checker.visit_functiondef(block)
+
+    @testutils.set_config(single_line_args_limit=3)
+    def test_bad_oneline_args_custom(self):
+        """make sure bad one-line format is caught"""
+        bad_oneline_func = '''
+def my_oneliner(arg1, arg2, arg3, arg4):  #@
+    pass
+'''
+        block = astroid.extract_node(bad_oneline_func)
+        with self.assertAddsMessages(
+            testutils.Message(
+                msg_id='invalid-oneline-function-format',
+                line=2,
+                args=3
+            )
+        ):
+            self.checker.visit_functiondef(block)
+
+class TestMethodArgsIndentChecker(helpers.ProsperCheckerTestCase):
+    CHECKER_CLASS = ArgsIndentChecker
+
+    def test_good_method_args(self):
+        """validate methods get the same lint treatment"""
+        good_class = '''
+class FancyClass:  #@
+    """class docstring"""
+    def foo(
+            self,
+            arg1,
+            arg2,
+            optional_arg=None
+    ):
+        pass
+'''
+        block = astroid.extract_node(good_class)
+        with self.assertNoMessages():
+            self.checker.visit_classdef(block)
+
+    def test_many_good_method_args(self):
+        """validate all methods are good in class"""
+        good_long_class = '''
+class FancierClass:  #@
+    def foo(
+            self,
+            arg1,
+            arg2,
+            optional_arg=None
+    ):
+        pass
+
+    def bar(
+            self,
+            arg1,
+            arg2,
+            optional_arg=None
+    ):
+        pass
+'''
+        block = astroid.extract_node(good_long_class)
+        with self.assertNoMessages():
+            self.checker.visit_classdef(block)
+
+    def test_bad_method_args(self):
+        """validate expected error with invalid args format"""
+        bad_class = '''
+class BadClass:  #@
+    """class docstring"""
+    def foo(self,
+            arg1,
+            arg2,
+            optional_arg=None
+    ):
+        pass
+'''
+        block = astroid.extract_node(bad_class)
+        with self.assertAddsMessages(
+            testutils.Message(
+                msg_id='invalid-function-arg-format',
+                line=4
+            )
+        ):
+            self.checker.visit_classdef(block)
+
+    @testutils.set_config(kevlin_func_args=False)
+    def test_bad_method_args_cfg_override(self):
+        """validate skip behavior for class args"""
+        bad_class = '''
+class BadClass:  #@
+    """class docstring"""
+    def foo(self,
+            arg1,
+            arg2,
+            optional_arg=None
+    ):
+        pass
+'''
+        block = astroid.extract_node(bad_class)
+        with self.assertNoMessages():
+            self.checker.visit_classdef(block)
+
+    def test_ok_oneline_method_args(self):
+        """validate one-line method limits (2+1)"""
+        good_oneline_class = '''
+class OneLineClass:  #@
+    def foo(self, arg1, arg2):  # +1 for ``self``
+        pass
+'''
+        block = astroid.extract_node(good_oneline_class)
+        with self.assertNoMessages():
+            self.checker.visit_classdef(block)
+
+    def test_bad_oneline_method_args(self):
+        """validate error for too many one-line method args"""
+        bad_oneline_class = '''
+class OneLineClass:  #@
+    def foo(self, arg1, arg2, arg3):  # +1 for ``self``
+        pass
+'''
+        block = astroid.extract_node(bad_oneline_class)
+        with self.assertAddsMessages(
+            testutils.Message(
+                msg_id='invalid-oneline-function-format',
+                line=3,
+                args=2
+            )
+        ):
+            self.checker.visit_classdef(block)
+
+    @testutils.set_config(single_line_args_limit=3)
+    def test_ok_oneline_method_args_custom(self):
+        """validate one-line method limits (2+1)"""
+        good_oneline_class = '''
+class OneLineClass:  #@
+    def foo(self, arg1, arg2, arg3):  # +1 for ``self``
+        pass
+'''
+        block = astroid.extract_node(good_oneline_class)
+        with self.assertNoMessages():
+            self.checker.visit_classdef(block)
+
+    @testutils.set_config(single_line_args_limit=3)
+    def test_bad_oneline_method_args_custom(self):
+        """validate error for too many one-line method args"""
+        bad_oneline_class = '''
+class OneLineClass:  #@
+    def foo(self, arg1, arg2, arg3, arg4):  # +1 for ``self``
+        pass
+'''
+        block = astroid.extract_node(bad_oneline_class)
+        with self.assertAddsMessages(
+            testutils.Message(
+                msg_id='invalid-oneline-function-format',
+                line=3,
+                args=3
+            )
+        ):
+            self.checker.visit_classdef(block)
