@@ -7,29 +7,16 @@ import pylint.checkers
 
 MSGS = {
     'E6900': (
-        'Invalid indentation, add %s spaces',
-        'Invalid function argument alignment',
+        'Argument alignment, move to new line',
+        'invalid-function-arg-format',
         'Used when inconsistent tabstops are used in argument list'
+    ),
+    'E6901': (
+        'Too many args for one-line.  More than %s args',
+        'invalid-oneline-function-format',
+        'Used when one-liner function call is too complex'
     )
 }
-
-OPTIONS = (
-    'kevlin-func-args',
-    dict(
-        default=True,
-        type='yn',
-        metavar='<y or n>',
-        help='Enforce newline function args.  A la Kevlin Henny\'s clean code notes'
-    )
-)
-def booty(butts):
-    """docstring
-
-    Args:
-        butts (str): a butt
-
-    """
-    print(butts)
 
 class FunctionArgsIndentChecker(pylint.checkers.BaseTokenChecker):
     """PyLint checker for enforcing Kevlin Henny's function arg preference
@@ -66,31 +53,32 @@ class FunctionArgsIndentChecker(pylint.checkers.BaseTokenChecker):
 
     msgs = MSGS
 
-    options = OPTIONS
+    options = (
+        (
+            'kevlin-func-args',
+            dict(
+                default=True,
+                type='yn',
+                metavar='<y or n>',
+                help='Enforce newline function args.  A la Kevlin Henny\'s clean code notes'
+            )
+        ),
+        (
+            'single-line-args-limit',
+            dict(
+                default=2,
+                type='int',
+                metavar='<int>',
+                help='number of args allowed to be on a single line'
 
-    def visit_module(self, node):
-        """Visit module and check for docstring quote consistency.
+            )
+        )
+    )
 
-        Args:
-            node: the module node being visited.
 
-        """
-        self._TODO_process(node, 'module')
-
-    # pylint: disable=unused-argument
-    def leave_module(self, node):
-        """Leave module and check remaining triple quotes.
-
-        Args:
-            node: the module node we are leaving.
-
-        """
-        pass
-
-        # after we are done checking these, clear out the triple-quote
-        # tracking collection so nothing is left over for the next module.
-        self._tokenized_triple_quotes = {}
-
+    def process_tokens(self, tokens):
+        """todo"""
+        print(tokens)
 
     def _TODO_process(self, node, node_type):
         """Check for docstring quote consistency.
@@ -101,3 +89,34 @@ class FunctionArgsIndentChecker(pylint.checkers.BaseTokenChecker):
 
         """
         pass
+
+    def visit_functiondef(self, node):
+        """checks for ``def function_name(arg1\n`` pattern
+
+        Args:
+            node (:obj:`astroid.node`): function node to grade
+
+        """
+        func_lineno = node.fromlineno
+        args_lineno = []
+        for arg in node.args.args:
+            args_lineno.append(arg.lineno)
+
+        ## Check if valid one-line function ##
+        one_line_args = len(set(args_lineno)) <= 1
+        if one_line_args and len(args_lineno) > self.config.single_line_args_limit:
+            self.add_message(
+                'invalid-oneline-function-format',
+                line=func_lineno,
+                args=(self.config.single_line_args_limit)
+            )
+            return
+        elif one_line_args and len(args_lineno) <= self.config.single_line_args_limit:
+            return  # valid one-line function
+
+        ## Check if first arg is on same line as function def ##
+        if func_lineno == args_lineno[0] and self.config.kevlin_func_args:
+            self.add_message(
+                'invalid-function-arg-format',
+                line=func_lineno
+            )
