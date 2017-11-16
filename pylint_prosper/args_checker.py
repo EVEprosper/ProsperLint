@@ -18,7 +18,7 @@ MSGS = {
     )
 }
 
-class FunctionArgsIndentChecker(pylint.checkers.BaseTokenChecker):
+class ArgsIndentChecker(pylint.checkers.BaseTokenChecker):
     """PyLint checker for enforcing Kevlin Henny's function arg preference
 
     ..code-block:: python

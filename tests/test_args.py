@@ -1,12 +1,12 @@
 """Tests for the string quote checker for class-level docstrings.
 """
-from pylint_prosper.func_args_checker import FunctionArgsIndentChecker
+from pylint_prosper.args_checker import ArgsIndentChecker
 import helpers
 from pylint import testutils
 import astroid
 
-class TestFuncArgIndentChecker(helpers.ProsperCheckerTestCase):
-    CHECKER_CLASS = FunctionArgsIndentChecker
+class TestFuncArgsIndentChecker(helpers.ProsperCheckerTestCase):
+    CHECKER_CLASS = ArgsIndentChecker
 
     def test_good_function_layout(self):
         """make sure good practice is supported"""
