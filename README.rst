@@ -27,6 +27,6 @@ Testing
     :target: https://coveralls.io/github/EVEprosper/ProsperLint?branch=master
 .. |PyPI Badge| image:: https://badge.fury.io/py/ProsperLint.svg
     :target: https://badge.fury.io/py/ProsperLint
-.. |Docs| image:: https://readthedocs.org/projects/prosperpylint/badge/?version=latest
-   :target: http://prosperpylint.readthedocs.io/en/latest/?badge=latest
-   :alt: Documentation Status
+.. |Docs| image:: https://readthedocs.org/projects/prosperlint/badge/?version=latest
+    :target: http://prosperlint.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status

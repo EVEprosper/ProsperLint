@@ -126,7 +126,7 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ],
-    keywords='prosper nltk discord chat bot slack stocks',
+    keywords='lint style plugin pylint',
     packages=find_packages(),
     include_package_data=True,
     data_files=[
