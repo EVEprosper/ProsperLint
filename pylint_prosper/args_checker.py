@@ -6,12 +6,12 @@ import pylint.checkers
 
 
 MSGS = {
-    'E6900': (
+    'E7700': (
         'Argument alignment, move to new line',
         'invalid-function-arg-format',
         'Used when inconsistent tabstops are used in argument list'
     ),
-    'E6901': (
+    'E7701': (
         'Too many args for one-line.  More than %s args',
         'invalid-oneline-function-format',
         'Used when one-liner function call is too complex'
@@ -80,6 +80,12 @@ class ArgsIndentChecker(pylint.checkers.BaseTokenChecker):
         """Not used?  Passing"""
         pass
 
+    def visit_callfunc(self, node):
+        """checks for ``results = do_something(arg1\n`` pattern in call functions"""
+        call_lineno = node.value.lineno
+        args = node.value.args
+        self._check_node_args_style(call_lineno, args)
+
     def visit_classdef(self, node):
         """checks for ``def function_name(arg1\n`` pattern in methods
 
@@ -88,9 +94,16 @@ class ArgsIndentChecker(pylint.checkers.BaseTokenChecker):
 
         """
         for function_node in node.locals.values():
-            self.visit_functiondef(function_node[0], oneline_limit_adjust=1)
+            method_node = function_node[0]
+            method_lineno = method_node.fromlineno
+            method_args = method_node.args.args
+            self._check_node_args_style(
+                method_lineno,
+                method_args,
+                oneline_limit_adjust=1
+            )
 
-    def visit_functiondef(self, node, oneline_limit_adjust=0):
+    def visit_functiondef(self, node):
         """checks for ``def function_name(arg1\n`` pattern
 
         Args:
@@ -98,25 +111,38 @@ class ArgsIndentChecker(pylint.checkers.BaseTokenChecker):
 
         """
         func_lineno = node.fromlineno
-        args_lineno = []
-        for arg in node.args.args:
-            args_lineno.append(arg.lineno)
+        args = node.args.args
+        self._check_node_args_style(func_lineno, args)
 
-        ## Check if valid one-line function ##
+    def _check_node_args_style(
+            self,
+            func_lineno,
+            args_list,
+            oneline_limit_adjust=0
+    ):
+        """do the actual work of finding bad args lines
+
+        Args:
+            func_lineno (int): starting line number
+            args_list (:obj:`list`): node.args values of function args
+            oneline_limit_adjust (int, optional): +/- adjustments of args limit for special cases
+
+        """
+        ## Check if valid one-line call ##
         oneline_limit = self.config.single_line_args_limit + oneline_limit_adjust
-        one_line_args = len(set(args_lineno)) <= 1
-        if one_line_args and len(args_lineno) > oneline_limit:
+        is_oneline = len(set([arg.lineno for arg in args_list])) <= 1  # all args on same line?
+        if is_oneline and len(args_list) > oneline_limit:
             self.add_message(
                 'invalid-oneline-function-format',
                 line=func_lineno,
                 args=(self.config.single_line_args_limit)
             )
             return
-        elif one_line_args and len(args_lineno) <= oneline_limit:
+        if is_oneline and len(args_list) <= oneline_limit:
             return  # valid one-line function
 
         ## Check if first arg is on same line as function def ##
-        if func_lineno == args_lineno[0] and self.config.kevlin_func_args:
+        if func_lineno == args_list[0].lineno and self.config.kevlin_func_args:
             self.add_message(
                 'invalid-function-arg-format',
                 line=func_lineno
