@@ -11,5 +11,5 @@ def register(linter):
         linter: Main interface object for Pylint plugins.
 
     """
-    import pylint_prosper.func_args_checker.FunctionArgsIndentChecker as FunctionArgsIndentChecker
-    linter.register_checker(FunctionArgsIndentChecker(linter))
+    from pylint_prosper.args_checker import ArgsIndentChecker
+    linter.register_checker(ArgsIndentChecker(linter))
