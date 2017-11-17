@@ -136,10 +136,16 @@ setup(
         '': ['LICENSE', 'README.rst'],
         'pylint_prosper': ['.prosperlintrc', 'version.txt']
     },
+    entry_points={
+        'console_scripts': [
+            'prosper_lint=pylint_prosper.prosper_lint.py:run_main'
+        ]
+    },
     install_requires=[
         'ProsperCommon',
         'pylint_quotes',
         'pylint',
+        'plumbum~=1.6.3'
     ],
     tests_require=[
         'pytest',
